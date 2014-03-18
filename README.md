@@ -551,6 +551,10 @@ attributes via ohai:
 
 - `node['apache']['version']` - version of apache
 
+This is used by some templates and the default recipe to decide
+which modules to enable and whether to use some version specific
+configuration directives.
+
 Usage
 =====
 

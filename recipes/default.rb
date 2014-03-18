@@ -17,6 +17,9 @@
 # limitations under the License.
 #
 
+Chef::Recipe.send(:include, Apache2::Helpers)
+Chef::Mixin::Template::TemplateContext.send(:include, Apache2::Helpers)
+
 include_recipe 'apache2::ohai_plugin'
 
 package 'apache2' do
@@ -201,7 +204,13 @@ template "#{node['apache']['dir']}/sites-available/default" do
   notifies :restart, 'service[apache2]'
 end
 
-node['apache']['default_modules'].each do |mod|
+modules = node['apache']['default_modules'].to_a
+node['apache']['conditional_modules'].each do |cond, mods|
+  if apache_version_requirement?(cond)
+    modules = modules.concat(mods)
+  end
+end
+modules.each do |mod|
   module_recipe_name = mod =~ /^mod_/ ? mod : "mod_#{mod}"
   include_recipe "apache2::#{module_recipe_name}"
 end

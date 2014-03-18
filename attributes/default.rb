@@ -43,6 +43,7 @@ when 'redhat', 'centos', 'scientific', 'fedora', 'suse', 'amazon', 'oracle'
   default['apache']['lib_dir']     = node['kernel']['machine'] =~ /^i[36]86$/ ? '/usr/lib/httpd' : '/usr/lib64/httpd'
   default['apache']['libexecdir']  = "#{node['apache']['lib_dir']}/modules"
   default['apache']['default_site_enabled'] = false
+  default['apache']['lock_file']   = 'logs/accept.lock'
 when 'debian', 'ubuntu'
   default['apache']['package']     = 'apache2'
   default['apache']['perl_pkg']    = 'perl'
@@ -65,6 +66,7 @@ when 'debian', 'ubuntu'
   default['apache']['lib_dir']     = '/usr/lib/apache2'
   default['apache']['libexecdir']  = "#{node['apache']['lib_dir']}/modules"
   default['apache']['default_site_enabled'] = false
+  default['apache']['lock_file']   = '/var/lock/apache2/accept.lock'
 when 'arch'
   default['apache']['package']     = 'apache'
   default['apache']['perl_pkg']    = 'perl'
@@ -83,6 +85,7 @@ when 'arch'
   default['apache']['lib_dir']     = '/usr/lib/httpd'
   default['apache']['libexecdir']  = "#{node['apache']['lib_dir']}/modules"
   default['apache']['default_site_enabled'] = false
+  default['apache']['lock_file']   = 'logs/accept.lock'
 when 'freebsd'
   default['apache']['package']     = 'apache22'
   default['apache']['perl_pkg']    = 'perl5'
@@ -102,6 +105,7 @@ when 'freebsd'
   default['apache']['lib_dir']     = '/usr/local/libexec/apache22'
   default['apache']['libexecdir']  = node['apache']['lib_dir']
   default['apache']['default_site_enabled'] = false
+  default['apache']['lock_file']   = '/var/log/accept.lock'
 else
   default['apache']['dir']         = '/etc/apache2'
   default['apache']['log_dir']     = '/var/log/apache2'
@@ -118,6 +122,7 @@ else
   default['apache']['lib_dir']     = '/usr/lib/apache2'
   default['apache']['libexecdir']  = "#{node['apache']['lib_dir']}/modules"
   default['apache']['default_site_enabled'] = false
+  default['apache']['lock_file']   = 'logs/accept.lock'
 end
 
 ###
@@ -177,9 +182,10 @@ default['apache']['proxy']['allow_from'] = 'none'
 # Default modules to enable via include_recipe
 
 default['apache']['default_modules'] = %w[
-  status alias auth_basic authn_file authz_default authz_groupfile authz_host authz_user autoindex
+  status alias auth_basic authn_file authz_groupfile authz_host authz_user autoindex
   dir env mime negotiation setenvif
 ]
+default['apache']['conditional_modules']['< 2.4'] = %w[authz_default]
 
 %w[log_config logio].each do |log_mod|
   default['apache']['default_modules'] << log_mod if %w[rhel fedora suse arch freebsd].include?(node['platform_family'])
